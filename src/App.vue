@@ -26,7 +26,6 @@
   <div>
 
 
-
     <div>
       <b-table :busy="isBusy" :fields="['index', 'text', 'confidence']" :items="filterByConfidence(responseData.words, confidenceMin)">
         <template v-slot:table-busy>
@@ -53,7 +52,6 @@
   </div>
 
 
-
   <!-- <div @click="uploadCroppedImage" class="">
   asdasd
 </div> -->
@@ -63,11 +61,6 @@
 
 <script>
 import { createWorker, PSM, OEM } from 'tesseract.js';
-
-
-
-
-
 export default {
   name: 'app',
 
@@ -77,7 +70,6 @@ export default {
 
       },
       responseData:[],
-      position:{},
       isBusy:false,
       confidenceMin:80,
       progVal:0,
@@ -103,7 +95,6 @@ export default {
         tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
       });
       const { data } = await worker.recognize(this.myCroppa.canvas);
-      console.log(data);
       this.isBusy=!this.isBusy;
       this.responseData = data;
     },
@@ -115,51 +106,44 @@ export default {
 
     },
     updateCoords: function() {
-     // console.log(this);
-      // console.log(this.myCroppa.imgData);
-      var meta = this.myCroppa.imgData
-      console.log(this.myCroppa);
-      var wrds = this.responseData.words;
-      // console.log(Object.keys(wrds).length);
-      if (wrds) {
-        console.log(wrds);
-      for (var i = 0; i <  wrds.length; i++) {
-        // wrds[i].bbox.x0 = (wrds[i].bbox.x0)-(meta.startX);
-        // wrds[i].bbox.x1 = (wrds[i].bbox.x1)-(meta.startX);
-        // wrds[i].bbox.y0 = (wrds[i].bbox.y0)-(meta.startY);
-        // wrds[i].bbox.y1 =  (wrds[i].bbox.y1)-(meta.startY);
-        console.log(wrds[i].bbox.x0);
-        console.log(meta.startX);
-      }
-
-      console.log(wrds);
-    }
+      // console.log(event);
+      // var meta = this.myCroppa.imgData
+      // var wrds = this.responseData.words;
+      // if (wrds) {
+      //   for (var i = 0; i <  wrds.length; i++) {
+      //     wrds[i].bbox.x0 = (wrds[i].bbox.x0)-(meta.startX);
+      //     wrds[i].bbox.x1 = (wrds[i].bbox.x1)-(meta.startX);
+      //     wrds[i].bbox.y0 = (wrds[i].bbox.y0)-(meta.startY);
+      //     wrds[i].bbox.y1 =  (wrds[i].bbox.y1)-(meta.startY);
+      //     console.log(wrds[i].bbox.x0);
+      //     console.log(meta.startX);
+      //   }
+      //   console.log(wrds);
+      // }
     },
     drawBox:function(){
-      var ctx = this.myCroppa.ctx;
-      console.log(this.myCroppa.img);
       var original = this.myCroppa;
+      var ctx = this.myCroppa.ctx;
       ctx.clearRect(0, 0, original.canvas.width, original.canvas.height);
-      console.log(this.myCroppa);
       this.myCroppa.ctx.drawImage(original.img, original.imgData.startX,original.imgData.startY,original.imgData.width, original.imgData.height);
       ctx.strokeStyle = '#ff0000';
       ctx.lineWidth = 4;
       var words = this.responseData.words;
       for (var i = 0; i < words.length; i++) {
         if (words[i].isClicked) {
-        ctx.beginPath();
-        ctx.moveTo(words[i].bbox.x0 , words[i].bbox.y0 );
-        ctx.lineTo(words[i].bbox.x1 , words[i].bbox.y0 );
-        ctx.lineTo(words[i].bbox.x1 , words[i].bbox.y1 );
-        ctx.lineTo(words[i].bbox.x0 , words[i].bbox.y1 );
-        ctx.closePath();
-        ctx.stroke();
-      }
+          ctx.beginPath();
+          ctx.moveTo(words[i].bbox.x0 , words[i].bbox.y0 );
+          ctx.lineTo(words[i].bbox.x1 , words[i].bbox.y0 );
+          ctx.lineTo(words[i].bbox.x1 , words[i].bbox.y1 );
+          ctx.lineTo(words[i].bbox.x0 , words[i].bbox.y1 );
+          ctx.closePath();
+          ctx.stroke();
+        }
       }
     },
-    filterByConfidence:function(data, conf){
+    filterByConfidence:function(data, tolerance){
       if (data) {
-        return  data.filter(word => word.confidence > conf);
+        return  data.filter(word => word.confidence > tolerance);
       }
     },
     resetImageInput: function(){
